@@ -1,12 +1,14 @@
 package com.example.hp.bookslist;
 
+import java.util.List;
+
 public class Book {
 
     //Title of the book
     private String mTitle;
 
     //Book author
-    private String mAuthor;
+    private List<String> mAuthors;
 
     //Book publisher
     private String mPublisher;
@@ -14,14 +16,14 @@ public class Book {
     /**
     * Constructor which creates an object of the book class
     * @param title is the title of the book
-    * @param author is the book author
+    * @param authors is the book authors
     * @param publisher is the book publisher
      */
-//    public Book(String title, String author, String publisher) {
-//        mTitle = title;
-//        mAuthor = author;
-//        mPublisher = publisher;
-//    }
+    public Book(String title, List<String> authors, String publisher) {
+        mTitle = title;
+        mAuthors = authors;
+        mPublisher = publisher;
+    }
 
     //Get the book title
     public String getTitle() {
@@ -29,8 +31,8 @@ public class Book {
     }
 
     //Get the book author
-    public String getAuthor() {
-        return mAuthor;
+    public List<String> getAuthor() {
+        return mAuthors;
     }
 
     //Get the book publisher
@@ -39,8 +41,8 @@ public class Book {
         return mPublisher;
     }
 
-    public void setAuthor(String mAuthor) {
-        this.mAuthor = mAuthor;
+    public void setAuthor(List<String> mAuthor) {
+        this.mAuthors = mAuthor;
     }
 
     public void setPublisher(String mPublisher) {

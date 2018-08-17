@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,8 +20,8 @@ public class BookAdapter extends ArrayAdapter<Book> {
      * Custom constructor whose context is used to inflate the layout file
      * and the list is the data we want to populate into the lists
      *
-     * @param context   The current context. It's used to inflate xml
-     * @param books     A list of Book objects to display in a list
+     * @param context The current context. It's used to inflate xml
+     * @param books   A list of Book objects to display in a list
      */
     public BookAdapter(@NonNull Activity context, @NonNull ArrayList<Book> books) {
         super(context, 0, books);
@@ -28,11 +29,12 @@ public class BookAdapter extends ArrayAdapter<Book> {
 
     /**
      * Provides a view for an AdapterView - a ListView in this case
-     * @param position      The position in the list of items that should be displayed
-     *                      in the list item view
-     * @param convertView   The recycled view to populate
-     * @param parent        The parent viewGroup that is inflated
-     * @return              The view for the position in the AdapterView
+     *
+     * @param position    The position in the list of items that should be displayed
+     *                    in the list item view
+     * @param convertView The recycled view to populate
+     * @param parent      The parent viewGroup that is inflated
+     * @return The view for the position in the AdapterView
      */
     @NonNull
     @Override
@@ -40,7 +42,7 @@ public class BookAdapter extends ArrayAdapter<Book> {
 
         //Check if the existing view is being reused, otherwise inflate the view
         View listItemView = convertView;
-        if (listItemView == null){
+        if (listItemView == null) {
             listItemView = LayoutInflater.from(getContext()).
                     inflate(R.layout.list_item, parent, false);
         }
@@ -54,14 +56,36 @@ public class BookAdapter extends ArrayAdapter<Book> {
         titleView.setText(currentBook.getTitle());
 
         //Find the text view with view id author
+        View authorLayout = listItemView.findViewById(R.id.author_view);
         TextView authorView = listItemView.findViewById(R.id.book_author_text_view);
+
+        //Convert authors array to string
+        StringBuilder authorsBuilder = new StringBuilder();
+        List<String> authors = currentBook.getAuthor();
+        for (String author : authors) {
+            if (authors.indexOf(author) == authors.size() - 1) {
+                authorsBuilder.append(author);
+                authorsBuilder.append(".");
+            } else {
+                authorsBuilder.append(author);
+                authorsBuilder.append(", ");
+            }
+        }
         //Display the author of the current book in that text view
-        authorView.setText(currentBook.getAuthor());
+        if (authors.isEmpty()) {
+            authorLayout.setVisibility(View.GONE);
+        } else {
+            authorView.setText(authorsBuilder);
+        }
 
         //Find the text view with view id publisher
         TextView publisherView = listItemView.findViewById(R.id.book_publisher_text_view);
         //Display the publisher of the current book in that text view
-        publisherView.setText(currentBook.getPublisher());
+        if (currentBook.getPublisher().equals("")) {
+            listItemView.findViewById(R.id.publisher_view).setVisibility(View.GONE);
+        } else {
+            publisherView.setText(currentBook.getPublisher());
+        }
 
         //Return the whole list item layout containing three TextViews
         //so that it can be shown in the ListView

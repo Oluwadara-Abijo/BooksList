@@ -1,43 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="16dp"
+    android:id="@+id/mainLayout"
     android:orientation="vertical"
     tools:context=".MainActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/empty_keyword_warning"
+        android:paddingTop="16dp"
+        android:paddingLeft="16dp"
+        android:textSize="16sp"
+        android:text="@string/empty_keyword_warning"
+        android:visibility="gone"
+        android:textColor="#ba000d"/>
 
     <EditText
         android:id="@+id/search_edit_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:hint="Enter a keyword"
+        android:hint="@string/search_edit_text_hint"
         android:inputType="text" />
 
     <Button
         android:id="@+id/search_button"
+        android:background="@color/colorPrimary"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/search_edit_text"
-        android:layout_centerHorizontal="true"
-        android:text="Search"
-        android:onClick="makeBookSearchQuery"/>
+        android:layout_gravity="center_horizontal"
+        android:onClick="makeBookSearchQuery"
+        android:text="@string/search" />
 
-    <ListView
-        android:id="@+id/list"
+    <TextView
+        android:id="@+id/tv_error_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:padding="16dp"
+        android:text="@string/error_message"
+        android:textSize="18sp"
+        android:visibility="gone" />
+
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/search_button">
+        android:layout_height="match_parent">
 
-    </ListView>
+        <ListView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-    <ProgressBar
-        android:id="@+id/loading_indicator"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:visibility="gone"/>
+        </ListView>
 
-</RelativeLayout>
+        <ProgressBar
+            android:id="@+id/loading_indicator"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:visibility="invisible" />
+
+    </FrameLayout>
+
+
+</LinearLayout>
