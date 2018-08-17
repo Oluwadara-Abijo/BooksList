@@ -8,4 +8,17 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="ListItemTheme">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/textColor</item>
+        <item name="android:paddingTop">8dp</item>
+    </style>
+
+    <style name="ListItemTitleTheme" parent="ListItemTheme">
+        <item name="android:textStyle">bold</item>
+        <item name="android:paddingRight">8dp</item>
+    </style>
+
 </resources>

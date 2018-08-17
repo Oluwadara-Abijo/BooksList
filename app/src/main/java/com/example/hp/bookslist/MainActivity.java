@@ -1,101 +1,136 @@
 package com.example.hp.bookslist;
 
+import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
+import android.os.AsyncTask;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.transition.Fade;
+import android.transition.TransitionManager;
+import android.util.Log;
 import android.view.View;
-import android.widget.Button;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.view.View.GONE;
-
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<Book>>{
-
-    final static String BOOKS_BASE_URL = "https://www.googleapis.com/books/v1/volumes";
+public class MainActivity extends AppCompatActivity {
 
     private EditText mSearchEditText;
 
-    int ID = 1;
+    private TextView mErrorMessageTextView;
 
-    private LoaderManager loaderManager;
-
-    private boolean isConnected;
+    private TextView mEmptyKeywordWarning;
 
     private ProgressBar mLoadingIndicator;
 
-    private BookAdapter mAdapter;
+    private List<Book> mList;
 
+    private ListView mBooksListView;
+
+    private ViewGroup mRootView;
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mList = new ArrayList<>();
+
         mSearchEditText = findViewById(R.id.search_edit_text);
 
-        Button mSearchButton = findViewById(R.id.search_button);
+        mErrorMessageTextView = findViewById(R.id.tv_error_message);
+
+        mEmptyKeywordWarning = findViewById(R.id.empty_keyword_warning);
+
+        mRootView = findViewById(R.id.mainLayout);
+
         mLoadingIndicator = findViewById(R.id.loading_indicator);
-        ListView bookListView = findViewById(R.id.list);
 
-        mAdapter = new BookAdapter(this, new ArrayList<Book>());
-
-        bookListView.setAdapter(mAdapter);
-
-        ConnectivityManager connectivityManager =
-                (ConnectivityManager)this.getSystemService(this.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
-        isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
-
-        //Start loading
-        loaderManager = getSupportLoaderManager();
-
+        mBooksListView = findViewById(R.id.list);
 
     }
 
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public void makeBookSearchQuery(View v) {
-        if (isConnected) {
-            mLoadingIndicator.setVisibility(View.VISIBLE);
-            loaderManager.initLoader(ID, null, this);
+        if (!isNetworkAvailable()) {
+            showError();
+            mErrorMessageTextView.setText(R.string.network_error_message);
         } else {
-            mLoadingIndicator.setVisibility(View.GONE);
+            boolean visible = false;
+            String searchQuery = mSearchEditText.getText().toString();
+            if (searchQuery.equals("")) {
+                TransitionManager.beginDelayedTransition(mRootView);
+                visible = !visible;
+                mEmptyKeywordWarning.setVisibility(visible ? View.VISIBLE : View.GONE);
+            } else {
+                mEmptyKeywordWarning.setVisibility(View.GONE);
+                URL queryURL = NetworkUtils.buildUrl(searchQuery);
+                Log.d(">>>", "Url: " + queryURL);
+                new BooksAsyncTask().execute(queryURL);
+            }
         }
     }
 
-
-    @Override
-    public Loader<List<Book>> onCreateLoader(int id, Bundle args) {
-
-        String keyword = mSearchEditText.getText().toString();
-
-        Uri baseUri = Uri.parse(BOOKS_BASE_URL);
-        Uri.Builder builder = baseUri.buildUpon();
-        builder.appendQueryParameter("q", keyword);
-
-        String builtUrl = builder.toString();
-
-        String url = BOOKS_BASE_URL + keyword;
-
-        return new BookLoader(this, builtUrl);
+    public void showData() {
+        mBooksListView.setVisibility(View.VISIBLE);
+        mErrorMessageTextView.setVisibility(View.GONE);
     }
 
-    @Override
-    public void onLoadFinished(Loader<List<Book>> loader, List<Book> books) {
-        mLoadingIndicator.setVisibility(View.GONE);
-        mAdapter.notifyDataSetChanged();
-
+    public void showError() {
+        mBooksListView.setVisibility(View.INVISIBLE);
+        mErrorMessageTextView.setVisibility(View.VISIBLE);
     }
 
-    @Override
-    public void onLoaderReset(Loader loader) {
+    public class BooksAsyncTask extends AsyncTask<URL, Void, String> {
 
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mLoadingIndicator.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected String doInBackground(URL... urls) {
+            URL url = urls[0];
+            String booksSearchResults = null;
+            try {
+                booksSearchResults = NetworkUtils.getResponseFromHttpUrl(url);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return booksSearchResults;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            mLoadingIndicator.setVisibility(View.INVISIBLE);
+            if (result != null && !result.equals("")) {
+                mList = QueryUtils.extractBooksFromJson(result);
+                BookAdapter mAdapter = new BookAdapter(MainActivity.this, (ArrayList<Book>) mList);
+                mBooksListView.setAdapter(mAdapter);
+                showData();
+            } else {
+                showError();
+            }
+        }
     }
+
 }
